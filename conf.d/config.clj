@@ -1,6 +1,8 @@
+(load-plugins)
+
 (let [index (index)]
   (streams
     (default :ttl 60
-      (where (service "test")
-        #(info %))
+
+      (myexample.test/all index)
       )))

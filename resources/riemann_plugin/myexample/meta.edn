@@ -1,0 +1,4 @@
+{ :plugin "myexample"
+  :title  "Example Riemann plugin"
+  :require myexample.main}
+;  :git-repo "https://github.com/krakatoa/riemann-docker-example"

@@ -7,3 +7,9 @@ Run:
 ====
 
 docker run --rm -p 5555:5555 krakatoa/riemann-docker-example
+
+With DockerCompose
+==================
+
+docker-compose build
+docker-compose up

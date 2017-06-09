@@ -1,0 +1,27 @@
+version: '2'
+services:
+  jar_builder:
+    build: .
+    volumes:
+      - 'myshare:/usr/lib/riemann'
+  riemann:
+    build:
+      dockerfile: Dockerfile-riemann
+      context: .
+    ports:
+      - "5555:5555"
+      - "5556:5556"
+    environment:
+      EXTRA_CLASSPATH: '/usr/lib/riemann/example-plugin.jar'
+    volumes_from:
+      - jar_builder
+    depends_on:
+      - jar_builder
+  dash:
+    image: travix/riemann-dash:latest
+    ports:
+      - "4567:4567"
+
+volumes:
+  myshare:
+    driver: local
