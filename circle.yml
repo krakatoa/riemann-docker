@@ -1,0 +1,16 @@
+machine:
+  services:
+    - docker
+
+dependencies:
+  pre:
+    - mv config/secrets.ci.yml config/secrets.yml
+    - docker build -t riemann-docker:$CIRCLE_SHA1 .
+
+deployment:
+  development:
+    branch: master
+    commands:
+      - aws ecr get-login --region us-east-1
+      - docker tag riemann-docker:$CIRCLE_SHA1 311513787758.dkr.ecr.us-east-1.amazonaws.com/riemann-docker:latest
+      - docker push 311513787758.dkr.ecr.us-east-1.amazonaws.com/riemann-docker:$CIRCLE_SHA1
