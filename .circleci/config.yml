@@ -1,0 +1,44 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/riemann-docker
+    #docker:
+    #  - image: circleci/clojure:lein-2.7.1
+    docker:
+      - image: docker:17.06.0-ce-git
+    #environment:
+    #  LEIN_ROOT: nbd
+    #  JVM_OPTS: -Xmx3200m
+    steps:
+      - checkout
+      - mv config/secrets.ci.yml config/secrets.yml
+      - run:
+        name: Install Docker Compose
+        command: |
+          set -x
+          curl -L https://github.com/docker/compose/releases/download/1.11.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+          chmod +x /usr/local/bin/docker-compose
+      - setup_remote_docker
+      - docker build -t riemann-docker:$CIRCLE_SHA1 .
+      - deploy:
+        name: Push Docker image to AWS ECR
+        command:
+          if [ "${CIRCLE_BRANCH}" == "master" ]; then
+            login="$(aws ecr get-login --region us-east-1)"
+            ${login}
+            docker tag riemann-docker:$CIRCLE_SHA1 "311513787758.dkr.ecr.us-east-1.amazonaws.com/riemann-docker:latest"
+            docker push "311513787758.dkr.ecr.us-east-1.amazonaws.com/riemann-docker:$CIRCLE_SHA1"
+          fi
+          #  docker tag riemann-docker:$CIRCLE_SHA1 "${ECR_ENDPOINT}/app:${CIRCLE_SHA1}"
+          #  docker push "${ECR_ENDPOINT}/app:${CIRCLE_SHA1}"
+#       - restore_cache:
+#           key: riemann-docker-{{ checksum "project.clj" }}
+#       - run: lein deps
+#       - save_cache:
+#           paths:
+#             - ~/.m2
+#           key: riemann-docker-{{ checksum "project.clj" }}
+#       - run: lein do test, uberjar
+#       - store_artifacts:
+#           path: target/uberjar/riemann-docker.jar
+#           destination: uberjar
